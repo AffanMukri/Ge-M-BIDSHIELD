@@ -3,5 +3,5 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
-  base: "/Ge-M-BIDSHIELD/",
+  base: process.env.GITHUB_ACTIONS ? "/Ge-M-BIDSHIELD/" : "/",
 });
