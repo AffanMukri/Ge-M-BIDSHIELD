@@ -1,0 +1,27 @@
+export type Status = 'Compliant'|'Review'|'Pending'|'Critical'|'Unavailable'|'Exempt'|'Not Applicable';
+export type ProviderMode = 'MOCK'|'CACHED'|'MANUAL'|'UNAVAILABLE';
+export type ProviderStatus = 'verified'|'mismatch'|'pending'|'unavailable'|'manual-review';
+export type SecurityStatus = 'SAFE'|'REVIEW'|'SUSPICIOUS'|'UNSCANNED'|'UNSUPPORTED';
+export type DiscrepancyType = 'EXACT MATCH'|'NORMALIZED MATCH'|'PARTIAL MATCH'|'VALUE MISMATCH'|'IDENTIFIER MISMATCH'|'DATE CONFLICT'|'EXPIRED'|'MISSING'|'DUPLICATE'|'CROSS-DOCUMENT CONFLICT'|'SOURCE CONFLICT'|'LOW OCR CONFIDENCE'|'SUSPICIOUS DOCUMENT'|'SOURCE UNAVAILABLE';
+
+export interface ProviderVerificationResult { providerId:string; providerName:string; mode:ProviderMode; status:ProviderStatus; queriedAt:string; referenceId?:string; submittedValue?:string; sourceValue?:string; normalizedValue?:string; confidence?:number; evidenceId:string; rawSnapshot?:unknown }
+export interface VerificationProvider { id:string; name:string; mode:ProviderMode; status:'Operational'|'Cached'|'Manual'|'Unavailable'; latency:string; lastCheck:string; affectedVerifications:number }
+export interface RuleApplicability { state:'Applicable'|'Exempt'|'Not Applicable'; reason:string; requiredEvidence:string; exemptionRuleId?:string }
+export interface Discrepancy { id:string; field:string; type:DiscrepancyType; submittedValue?:string; documentValue?:string; sourceValue?:string; normalizedValues?:string[]; severity:'info'|'review'|'critical'; confidence:number; explanation:string; evidenceIds:string[] }
+export interface SecurityFlag { id:string; category:string; matchedPhrase:string; page:number; location?:string; visibility:'visible'|'hidden'; confidence:number; detectedAt:string; documentId:string }
+export interface DocumentSecurityResult { documentId:string; status:SecurityStatus; scannedAt:string; embeddedTextCount:number; ocrTextCount:number; differencePercent:number; flags:SecurityFlag[]; explanation:string }
+export interface ExtractedField { name:string; value:string; confidence:number; page:number; evidenceId:string }
+export interface DocumentVersion { version:number; uploadedAt:string; uploadedBy:string; checksum:string }
+export interface BidderDocument { id:string; name:string; type:string; issuer:string; issueDate:string; expiryDate?:string; security:DocumentSecurityResult; versions:DocumentVersion[]; extractedFields:ExtractedField[] }
+export interface OrganizationDocument { documentId:string; type:string; organization:string; issueDate:string; expiryDate?:string; issuer:string; verificationState:string; freshness:string; lastUsed:string; relatedTenders:string[]; fileName:string; securityStatus:SecurityStatus }
+export interface TenderClause { clause:string; page:number; originalText:string }
+export interface ComplianceRule extends TenderClause { ruleId:string; tenderId:string; title:string; category:string; requirementType:string; severity:'Low'|'Medium'|'High'|'Critical'; applicability:string; operator:string; threshold?:string; requiredEvidence:string[]; verificationProvider:string; exemptionLogic?:string; manualReviewConditions:string[]; confidence:number; status:'AI EXTRACTED'|'DRAFT'|'NEEDS REVIEW'|'APPROVED'|'REJECTED'|'MANUAL ONLY'; version:number; approvedBy?:string; approvedAt?:string }
+export interface AuditEvent { eventId:string; timestamp:string; user:string; type:string; description:string; documentId?:string; tenderId?:string; bidderId?:string; securityResult?:SecurityStatus; reviewer?:string; reason?:string; referenceId:string; payloadDigest?:string; previousHash?:string; currentHash?:string }
+export interface SourceSnapshot { id:string; providerId:string; capturedAt:string; mode:ProviderMode; payload:unknown; checksum:string }
+export interface EvidenceRecord { evidenceId:string; ruleId:string; tenderClause:string; applicability:RuleApplicability; submittedValue:string; extractedValue?:string; sourceValue?:string; normalizedValue?:string; status:Status; confidence:number; source:string; sourceMode:ProviderMode; verifiedAt:string; document:string; snapshot?:SourceSnapshot; explanation:string; discrepancies:Discrepancy[]; auditHistory:string[] }
+export interface StatutoryRegistration { type:string; registrationNumber:string; enterpriseName:string; status:string; validFrom?:string; validTo?:string; providerResult:ProviderVerificationResult }
+export interface IncomeTaxCompliance { pan:string; entityName:string; returnFilingStatus:string; assessmentYears:string[]; lastVerificationDate:string; tenderRequirement:string; result:Status }
+export interface VerificationResult extends ProviderVerificationResult { finding:Status; evidence:EvidenceRecord }
+export interface Check { id:string; ruleId:string; label:string; source:string; mode:ProviderMode; status:Status; submitted:string; extracted?:string; verified:string; normalized?:string; confidence:number; clause:string; evidence:string; note:string; applicability:RuleApplicability; discrepancies:Discrepancy[]; details?:Record<string,string>; securityStatus?:SecurityStatus; freshness?:import('./evidence.types').EvidenceFreshness }
+export interface Bidder { id:string; name:string; sellerId:string; gstin:string; score:number; risk:number; readiness:number; mandatory:string; checks:Check[] }
+export interface Tender { id:string; title:string; category:string; value:string; bidders:number; progress:number; deadline:string; status:string }
